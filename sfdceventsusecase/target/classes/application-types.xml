@@ -1,0 +1,54 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<types:mule xmlns:types="http://www.mulesoft.org/schema/mule/types">
+  <types:catalog>
+    <types:type name="EventPaylaod" format="json">
+      <types:shape format="weave" example="examples/event.json"><![CDATA[%dw 2.0
+
+type EventPaylaod = {|
+  data: {|
+    schema: String, 
+    payload: {|
+      CreatedById: String, 
+      CustomerId__c: Number {"typeId": "double"}, 
+      CreatedDate: String, 
+      CustomerName__c: String, 
+      Address__c: String
+    |}, 
+    event: {| replayId: Number {"typeId": "int"} |}
+  |}, 
+  channel: String
+|} {"example": "{\\\"data\\\":{\\\"schema\\\":\\\"fsddddfdfsd\\\",\\\"payload\\\":{\\\"CreatedById\\\":\\\"00000000000ffdssffd\\\",\\\"CustomerId__c\\\":12345.0,\\\"CreatedDate\\\":\\\"2020-07-28T11:44:23.503Z\\\",\\\"CustomerName__c\\\":\\\"Test\\\",\\\"Address__c\\\":\\\"abc street\\\"},\\\"event\\\":{\\\"replayId\\\":111}},\\\"channel\\\":\\\"\\/event\\/Customer__e\\\"}"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="Customer" format="json">
+      <types:shape format="weave" example="examples/Customer.json"><![CDATA[%dw 2.0
+
+type Customer = {|
+  Customer: {|
+    Id: Number {"typeId": "int"}, 
+    Name: String, 
+    Address: String, 
+    CreatedDate: String, 
+    MessageId: String
+  |}
+|} {"example": "{\\\"Customer\\\":{\\\"Id\\\":1234,\\\"Name\\\":\\\"Test\\\",\\\"Address\\\":\\\"abc street\\\",\\\"CreatedDate\\\":\\\"2020-07-28T11:44:23.503Z\\\",\\\"MessageId\\\":\\\"23332132321fsfdfdsf\\\"}}"}
+
+]]></types:shape>
+    </types:type>
+  </types:catalog>
+  <types:enrichment select="#81066976-7e6d-4dc1-95f1-52e66f070a0b">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="EventPaylaod"/>
+        </types:message>
+      </types:input-event>
+      <types:output-event>
+        <types:message>
+          <types:payload type="Customer"/>
+        </types:message>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+</types:mule>

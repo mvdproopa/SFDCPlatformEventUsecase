@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:secure-properties="http://www.mulesoft.org/schema/mule/secure-properties" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/schema/mule/secure-properties/current/mule-secure-properties.xsd">
+	<salesforce:sfdc-config name="Salesforce_Config" doc:name="Salesforce Config" doc:id="82ad5faf-05b6-4f12-8da7-ecf2177c76bf" >
+		<salesforce:basic-connection username="${secure::SFDC.Username}" password="${secure::SFDC.Password}" securityToken="${secure::SFDC.Token}" />
+	</salesforce:sfdc-config>
+	<http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="2a4e5b74-c8a0-4173-8066-5010ce88a314" >
+		<http:request-connection maxConnections="2" connectionIdleTimeout="3000" host="${secure::HTTP.URL}">
+			<reconnection >
+				<reconnect />
+			</reconnection>
+		</http:request-connection>
+	</http:request-config>
+	<secure-properties:config name="Secure_Properties_Config" doc:name="Secure Properties Config" doc:id="73776420-374e-4eb4-8809-e698fc759538" file="ConnectionDetailsSecure.yaml" key="Mulesoft" >
+		<secure-properties:encrypt algorithm="Blowfish" />
+	</secure-properties:config>
+	<flow name="sfdceventsusecaseFlow" doc:id="336ba767-e74c-48ef-bbdd-953666843f05" >
+		<salesforce:replay-channel-listener streamingChannel="/event/Customer__e" replayOption="ONLY_NEW" doc:name="Replay channel listener" doc:id="803accc5-5d67-444b-81cb-e33aa6814c9c" config-ref="Salesforce_Config" autoReplay="true" primaryNodeOnly="false">
+			<reconnect />
+		</salesforce:replay-channel-listener>
+		<ee:transform doc:name="Transform Message" doc:id="81066976-7e6d-4dc1-95f1-52e66f070a0b" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"Customer": {
+		Id: payload.data.payload.CustomerId__c,
+		Name: payload.data.payload.CustomerName__c,
+		Address: payload.data.payload.Address__c,
+		CreatedDate: payload.data.payload.CreatedDate,
+		"MessageId": uuid()
+	}
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="d295e2aa-d946-40e9-add8-9fd306319f55" message="#[payload]"/>
+		<http:request method="GET" doc:name="Request" doc:id="a398a917-d3ce-49b8-9b46-075639c05f77" config-ref="HTTP_Request_configuration" path="/api/customer">
+			<reconnect />
+		</http:request>
+		<logger level="INFO" doc:name="Logger" doc:id="7e849e9a-a41d-4d4b-9f7f-26d9a85c8c4a" message="#[payload]" />
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="07c7413c-b41a-488e-ada1-bbe8a73d94f9" >
+				<logger level="INFO" doc:name="Logger" doc:id="3c09aafb-9a3b-4c60-b7eb-710973c33693" message="#[error.description]"/>
+			</on-error-propagate>
+		</error-handler>
+	</flow>
+</mule>

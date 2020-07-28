@@ -1,0 +1,16 @@
+{
+  "data": {
+    "schema": "fsddddfdfsd",
+    "payload": {
+      "CreatedById": "00000000000ffdssffd",
+      "CustomerId__c": 12345.0,
+      "CreatedDate": "2020-07-28T11:44:23.503Z",
+      "CustomerName__c": "Test",
+      "Address__c": "abc street"
+    },
+    "event": {
+      "replayId": 111
+    }
+  },
+  "channel": "/event/Customer__e"
+}

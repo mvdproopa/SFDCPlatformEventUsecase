@@ -1,0 +1,11 @@
+{
+
+    "Customer" : {
+        "Id" : 1234,
+        "Name" : "Test",
+        "Address" : "abc street",
+        "CreatedDate" : "2020-07-28T11:44:23.503Z",
+        "MessageId" : "23332132321fsfdfdsf"
+    
+    }
+}
